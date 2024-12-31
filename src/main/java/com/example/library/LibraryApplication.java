@@ -24,15 +24,15 @@ public class LibraryApplication {
         return new CommandLineRunner() {
             @Override
             public void run(String... args) throws Exception {
-                Book titan = new Book();
-                titan.setTitle("Titan");
-                titan.setAuthor("Theodore Dreiser");
-                titan.setIsbn("978-966-03-7862-9");
-                titan.setPrice(BigDecimal.valueOf(430));
-                titan.setDescription("Titan is a novel by the American writer "
+                Book greenKing = new Book();
+                greenKing.setTitle("Green King");
+                greenKing.setAuthor("Paul-Loup Sulitzer");
+                greenKing.setIsbn(" 978-985-15-4656-1");
+                greenKing.setPrice(BigDecimal.valueOf(320));
+                greenKing.setDescription("Titan is a novel by the American writer "
                         + "Theodore Dreiser, published in May 1914.");
 
-                bookService.save(titan);
+                bookService.save(greenKing);
 
                 System.out.println(bookService.findAll());
             }
