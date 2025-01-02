@@ -3,17 +3,17 @@ package com.example.library;
 import com.example.library.model.Book;
 import com.example.library.service.BookService;
 import java.math.BigDecimal;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+@RequiredArgsConstructor
 @SpringBootApplication
 public class LibraryApplication {
 
-    @Autowired
-    private BookService bookService;
+    private final BookService bookService;
 
     public static void main(String[] args) {
         SpringApplication.run(LibraryApplication.class, args);
