@@ -1,5 +1,6 @@
 package com.example.library.repository;
 
+import com.example.library.exception.EntityNotFoundException;
 import com.example.library.model.Book;
 import jakarta.persistence.criteria.CriteriaQuery;
 import java.util.List;
@@ -15,7 +16,7 @@ public class BookRepositoryImpl implements BookRepository {
     private final SessionFactory sessionFactory;
 
     @Override
-    public Book save(Book book) {
+    public Book createBook(Book book) {
         Session session = null;
         Transaction transaction = null;
         try {
@@ -37,7 +38,20 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
-    public List<Book> findAll() {
+    public Book getBookById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            Book book = session.get(Book.class, id);
+            if (book == null) {
+                throw new EntityNotFoundException("Book with id " + id + " not found");
+            }
+            return book;
+        } catch (Exception e) {
+            throw new RuntimeException("Can't get book by id " + id, e);
+        }
+    }
+
+    @Override
+    public List<Book> getAll() {
         try (Session session = sessionFactory.openSession()) {
             CriteriaQuery<Book> criteriaQuery = session.getCriteriaBuilder()
                     .createQuery(Book.class);
