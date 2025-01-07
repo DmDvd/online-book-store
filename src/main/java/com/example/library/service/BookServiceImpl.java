@@ -2,6 +2,7 @@ package com.example.library.service;
 
 import com.example.library.dto.BookDto;
 import com.example.library.dto.CreateBookRequestDto;
+import com.example.library.exception.EntityNotFoundException;
 import com.example.library.mapper.BookMapper;
 import com.example.library.model.Book;
 import com.example.library.repository.BookRepository;
@@ -23,7 +24,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDto getBookById(Long id) {
-        Book book = bookRepository.getBookById(id);
+        Book book = bookRepository.getBookById(id).orElseThrow(
+                () -> new EntityNotFoundException("Can't find book by id" + id)
+        );
         return bookMapper.toDto(book);
     }
 
