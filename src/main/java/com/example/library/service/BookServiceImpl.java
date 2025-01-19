@@ -9,7 +9,9 @@ import com.example.library.repository.BookRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class BookServiceImpl implements BookService {
@@ -25,7 +27,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookDto getBookById(Long id) {
         Book book = bookRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Can't find book by id" + id)
+                () -> new EntityNotFoundException("Can't find book by id: " + id)
         );
         return bookMapper.toDto(book);
     }
@@ -49,7 +51,6 @@ public class BookServiceImpl implements BookService {
         );
         bookMapper.updateBookFromDto(requestDto, book);
 
-        bookRepository.save(book);
         return bookMapper.toDto(book);
     }
 }
