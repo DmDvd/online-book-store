@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TitleSpecificationProvider implements SpecificationProvider<Book> {
-    private static final String TITLE = "title";
+    public static final String TITLE = "title";
 
     @Override
     public String getKey() {

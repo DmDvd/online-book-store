@@ -1,5 +1,9 @@
 package com.example.library.repository.book;
 
+import static com.example.library.repository.book.AuthorSpecificationProvider.AUTHOR;
+import static com.example.library.repository.book.IsbnSpecificationProvider.ISBN;
+import static com.example.library.repository.book.TitleSpecificationProvider.TITLE;
+
 import com.example.library.dto.BookSearchParametersDto;
 import com.example.library.model.Book;
 import com.example.library.repository.SpecificationBuilder;
@@ -11,9 +15,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class BookSpecificationBuilder implements SpecificationBuilder<Book> {
-    private static final String TITLE = "title";
-    private static final String AUTHOR = "author";
-    private static final String ISBN = "isbn";
     private final SpecificationProviderManager<Book> bookSpecificationProviderManager;
 
     @Override
@@ -25,11 +26,11 @@ public class BookSpecificationBuilder implements SpecificationBuilder<Book> {
         }
         if (searchParametersDto.author() != null && searchParametersDto.author().length > 0) {
             spec = spec.and(bookSpecificationProviderManager.getSpecificationProvider(AUTHOR)
-                    .getSpecification(searchParametersDto.title()));
+                    .getSpecification(searchParametersDto.author()));
         }
         if (searchParametersDto.isbn() != null && searchParametersDto.isbn().length > 0) {
             spec = spec.and(bookSpecificationProviderManager.getSpecificationProvider(ISBN)
-                    .getSpecification(searchParametersDto.title()));
+                    .getSpecification(searchParametersDto.isbn()));
         }
         return spec;
     }
