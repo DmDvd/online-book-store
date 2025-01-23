@@ -15,7 +15,13 @@ public class BookSpecificationProviderManager implements SpecificationProviderMa
     @Override
     public SpecificationProvider<Book> getSpecificationProvider(String key) {
         return bookSpecificationProviders.stream()
-                .filter(b -> b.getKey().equals(key))
+                .filter(provider ->
+                        (provider instanceof TitleSpecificationProvider
+                                && TitleSpecificationProvider.TITLE.equals(key))
+                                || (provider instanceof AuthorSpecificationProvider
+                                && AuthorSpecificationProvider.AUTHOR.equals(key))
+                                || (provider instanceof IsbnSpecificationProvider
+                                && IsbnSpecificationProvider.ISBN.equals(key)))
                 .findFirst()
                 .orElseThrow(() ->
                         new RuntimeException("Can't find correct specification provider for key "
