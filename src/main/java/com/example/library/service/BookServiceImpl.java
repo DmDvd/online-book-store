@@ -1,8 +1,8 @@
 package com.example.library.service;
 
-import com.example.library.dto.BookDto;
-import com.example.library.dto.BookSearchParametersDto;
-import com.example.library.dto.CreateBookRequestDto;
+import com.example.library.dto.book.BookDto;
+import com.example.library.dto.book.BookSearchParametersDto;
+import com.example.library.dto.book.CreateBookRequestDto;
 import com.example.library.exception.EntityNotFoundException;
 import com.example.library.mapper.BookMapper;
 import com.example.library.model.Book;

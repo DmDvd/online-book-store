@@ -4,7 +4,7 @@ import static com.example.library.repository.book.AuthorSpecificationProvider.AU
 import static com.example.library.repository.book.IsbnSpecificationProvider.ISBN;
 import static com.example.library.repository.book.TitleSpecificationProvider.TITLE;
 
-import com.example.library.dto.BookSearchParametersDto;
+import com.example.library.dto.book.BookSearchParametersDto;
 import com.example.library.model.Book;
 import com.example.library.repository.SpecificationBuilder;
 import com.example.library.repository.SpecificationProviderManager;
