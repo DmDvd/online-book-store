@@ -35,10 +35,6 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**", "/error",
                                         "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/api/books").hasRole("USER")
-                                .requestMatchers("/api/books/{id}").hasRole("USER")
-                                .requestMatchers("/api/books/search").hasRole("USER")
-                                .requestMatchers("/api/books/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults())
