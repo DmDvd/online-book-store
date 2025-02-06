@@ -8,11 +8,10 @@ import com.example.library.model.Role;
 import com.example.library.model.User;
 import com.example.library.repository.role.RoleRepository;
 import com.example.library.repository.user.UserRepository;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
