@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthenticationService {
 
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     public UserLoginResponseDto authenticate(UserLoginRequestDto request) {
         final Authentication authentication = authenticationManager.authenticate(

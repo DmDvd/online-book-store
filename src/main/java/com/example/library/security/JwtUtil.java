@@ -46,10 +46,10 @@ public class JwtUtil {
     }
 
     public String getUsername(String token) {
-        return getClainFromToken(token, Claims::getSubject);
+        return getClaimFromToken(token, Claims::getSubject);
     }
 
-    private <T> T getClainFromToken(String token, Function<Claims, T> claimsResolver) {
+    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = Jwts.parser()
                 .verifyWith(secret)
                 .build()
