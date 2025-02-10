@@ -7,6 +7,5 @@ import lombok.Data;
 public class CreateCategoryRequestDto {
     @NotBlank
     private String name;
-    @NotBlank
     private String description;
 }

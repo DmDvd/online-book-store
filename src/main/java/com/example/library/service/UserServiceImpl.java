@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
             throw new RegistrationException("Can't register user, email already exists");
         }
         User user = userMapper.toModel(requestDto);
-        Role userRole = roleRepository.findByName(Role.RoleName.USER);
+        Role userRole = roleRepository.findByName(Role.RoleName.ROLE_USER);
         user.setRoles(Set.of(userRole));
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         userRepository.save(user);
