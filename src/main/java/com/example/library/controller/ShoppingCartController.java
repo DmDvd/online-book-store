@@ -40,7 +40,7 @@ public class ShoppingCartController {
         return shoppingCartService.addBookToCart(requestDto);
     }
 
-    @Operation(summary = "Update quantity of a book in the shopping cart",
+    @Operation(summary = "Update quantity",
             description = "Update quantity of a book in the shopping cart")
     @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/items/{cartItemId}")
