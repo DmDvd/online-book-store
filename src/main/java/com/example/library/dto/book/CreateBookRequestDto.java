@@ -4,8 +4,11 @@ import com.example.library.validation.CoverImage;
 import com.example.library.validation.Isbn;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -23,4 +26,6 @@ public class CreateBookRequestDto {
     private String description;
     @CoverImage
     private String coverImage;
+    @NotEmpty
+    private List<@Positive Long> categoriesId;
 }
