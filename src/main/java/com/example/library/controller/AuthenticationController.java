@@ -6,7 +6,7 @@ import com.example.library.dto.user.UserRegistrationRequestDto;
 import com.example.library.dto.user.UserResponseDto;
 import com.example.library.exception.RegistrationException;
 import com.example.library.security.AuthenticationService;
-import com.example.library.service.UserService;
+import com.example.library.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

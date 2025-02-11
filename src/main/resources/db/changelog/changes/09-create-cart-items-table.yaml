@@ -1,27 +1,35 @@
 databaseChangeLog:
   - changeSet:
-      id: create-categories-table
+      id: create-cart-items-table
       author: davydov
       changes:
         - createTable:
-            tableName: categories
+            tableName: cart_items
             columns:
               - column:
                   name: id
                   type: bigint
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false
-                    autoIncrement: true
               - column:
-                  name: name
-                  type: varchar(255)
+                  name: shopping_cart_id
+                  type: bigint
                   constraints:
                     nullable: false
-                    unique: true
+                    foreignKeyName: fk_cart_item_shopping_cart
+                    references: shopping_cart(id)
               - column:
-                  name: description
-                  type: text
+                  name: book_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cart_item_book
+                    references: books(id)
+              - column:
+                  name: quantity
+                  type: int
                   constraints:
                     nullable: false
               - column:

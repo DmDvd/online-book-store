@@ -1,4 +1,4 @@
-package com.example.library.service;
+package com.example.library.service.category;
 
 import com.example.library.dto.book.BookDtoWithoutCategoryIds;
 import com.example.library.dto.category.CategoryDto;

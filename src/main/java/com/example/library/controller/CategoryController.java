@@ -3,7 +3,7 @@ package com.example.library.controller;
 import com.example.library.dto.book.BookDtoWithoutCategoryIds;
 import com.example.library.dto.category.CategoryDto;
 import com.example.library.dto.category.CreateCategoryRequestDto;
-import com.example.library.service.CategoryService;
+import com.example.library.service.category.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
