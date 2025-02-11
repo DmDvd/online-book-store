@@ -1,4 +1,4 @@
-package com.example.library.service;
+package com.example.library.service.user;
 
 import com.example.library.dto.user.UserRegistrationRequestDto;
 import com.example.library.dto.user.UserResponseDto;
