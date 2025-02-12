@@ -3,10 +3,9 @@ package com.example.library.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -19,13 +18,13 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Setter
 @Getter
-@SQLDelete(sql = "UPDATE shopping_cart SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE shopping_carts SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 @Entity
-@Table(name = "shopping_cart")
+@Table(name = "shopping_carts")
 public class ShoppingCart {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @MapsId
     private Long id;
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -36,8 +35,8 @@ public class ShoppingCart {
     private boolean isDeleted = false;
 
     public ShoppingCart(User user) {
+        this.id = user.getId();
         this.user = user;
         this.cartItem = new HashSet<>();
-        this.isDeleted = false;
     }
 }

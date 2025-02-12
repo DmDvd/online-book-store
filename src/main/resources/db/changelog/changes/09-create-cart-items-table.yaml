@@ -19,7 +19,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     foreignKeyName: fk_cart_item_shopping_cart
-                    references: shopping_cart(id)
+                    references: shopping_carts(id)
               - column:
                   name: book_id
                   type: bigint

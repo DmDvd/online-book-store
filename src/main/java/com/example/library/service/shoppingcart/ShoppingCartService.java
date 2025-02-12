@@ -5,11 +5,11 @@ import com.example.library.dto.cartitem.UpdateCartItemRequestDto;
 import com.example.library.dto.shopppingcart.ShoppingCartDto;
 
 public interface ShoppingCartService {
-    ShoppingCartDto getShoppingCart();
+    ShoppingCartDto getShoppingCart(Long userId);
 
-    ShoppingCartDto addBookToCart(AddToCartRequestDto requestDto);
+    ShoppingCartDto addBookToCart(Long userId, AddToCartRequestDto requestDto);
 
-    ShoppingCartDto update(Long cartItemId, UpdateCartItemRequestDto requestDto);
+    ShoppingCartDto update(Long userId, Long cartItemId, UpdateCartItemRequestDto requestDto);
 
-    void removeCartItem(Long cartItemId);
+    void removeCartItem(Long userId, Long cartItemId);
 }
