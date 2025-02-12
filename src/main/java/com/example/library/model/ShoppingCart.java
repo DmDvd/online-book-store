@@ -24,9 +24,9 @@ import org.hibernate.annotations.SQLRestriction;
 @Table(name = "shopping_carts")
 public class ShoppingCart {
     @Id
-    @MapsId
     private Long id;
     @OneToOne
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
     @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL)
