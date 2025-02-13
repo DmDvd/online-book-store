@@ -9,7 +9,6 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,10 +32,4 @@ public class ShoppingCart {
     private Set<CartItem> cartItem;
     @Column(nullable = false)
     private boolean isDeleted = false;
-
-    public ShoppingCart(User user) {
-        this.id = user.getId();
-        this.user = user;
-        this.cartItem = new HashSet<>();
-    }
 }

@@ -8,6 +8,7 @@ import com.example.library.model.Role;
 import com.example.library.model.User;
 import com.example.library.repository.role.RoleRepository;
 import com.example.library.repository.user.UserRepository;
+import com.example.library.service.shoppingcart.ShoppingCartService;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ShoppingCartService shoppingCartService;
 
     @Transactional
     @Override
@@ -34,6 +36,7 @@ public class UserServiceImpl implements UserService {
         user.setRoles(Set.of(userRole));
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         userRepository.save(user);
+        shoppingCartService.createShoppingCart(user);
         return userMapper.toUserResponse(user);
     }
 }

@@ -3,6 +3,7 @@ package com.example.library.service.shoppingcart;
 import com.example.library.dto.cartitem.AddToCartRequestDto;
 import com.example.library.dto.cartitem.UpdateCartItemRequestDto;
 import com.example.library.dto.shopppingcart.ShoppingCartDto;
+import com.example.library.model.User;
 
 public interface ShoppingCartService {
     ShoppingCartDto getShoppingCart(Long userId);
@@ -12,4 +13,6 @@ public interface ShoppingCartService {
     ShoppingCartDto update(Long userId, Long cartItemId, UpdateCartItemRequestDto requestDto);
 
     void removeCartItem(Long userId, Long cartItemId);
+
+    void createShoppingCart(User user);
 }
