@@ -102,9 +102,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderItemDto> getOrderItems(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(
-                () -> new EntityNotFoundException("Can't find order by id: " + orderId)
+    public List<OrderItemDto> getOrderItems(Long orderId, Long userId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, userId).orElseThrow(
+                () -> new EntityNotFoundException("Can't find order by id: "
+                        + orderId + " for user id: " + userId)
         );
         return order.getOrderItem()
                 .stream()
@@ -113,9 +114,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderItemDto getOrderItem(Long orderId, Long itemId) {
-        OrderItem orderItem = orderItemRepository.findById(itemId).orElseThrow(
-                () -> new EntityNotFoundException("Can't find order item by id: " + itemId)
+    public OrderItemDto getOrderItem(Long orderId, Long itemId, Long userId) {
+        OrderItem orderItem = orderItemRepository
+                .findByIdAndOrderIdAndOrderUserId(itemId, orderId, userId).orElseThrow(
+                    () -> new EntityNotFoundException("Can't find order item by id: " + itemId
+                        + " in order id: " + orderId + " for user id: " + userId)
         );
         return orderItemMapper.toDto(orderItem);
     }

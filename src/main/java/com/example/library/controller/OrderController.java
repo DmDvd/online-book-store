@@ -50,15 +50,20 @@ public class OrderController {
             description = "Retrieve all items from a specific order")
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{orderId}/items")
-    public List<OrderItemDto> gettingItemsOnTheOrders(@PathVariable Long orderId) {
-        return orderService.getOrderItems(orderId);
+    public List<OrderItemDto> gettingItemsOnTheOrders(@PathVariable Long orderId,
+                                                      Authentication authentication) {
+        Long userId = getUserId(authentication);
+        return orderService.getOrderItems(orderId, userId);
     }
 
     @Operation(summary = "Get order item", description = "Retrieve item from a specific order")
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{orderId}/items/{itemId}")
-    public OrderItemDto getOrderItems(@PathVariable Long orderId, @PathVariable Long itemId) {
-        return orderService.getOrderItem(orderId, itemId);
+    public OrderItemDto getOrderItem(@PathVariable Long orderId,
+                                     @PathVariable Long itemId,
+                                     Authentication authentication) {
+        Long userId = getUserId(authentication);
+        return orderService.getOrderItem(orderId, itemId, userId);
     }
 
     @Operation(summary = "Update order status", description = "Change the status of an order")

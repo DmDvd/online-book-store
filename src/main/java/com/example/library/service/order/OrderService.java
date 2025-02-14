@@ -13,7 +13,7 @@ public interface OrderService {
 
     OrderDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto requestDto);
 
-    List<OrderItemDto> getOrderItems(Long orderId);
+    List<OrderItemDto> getOrderItems(Long orderId, Long userId);
 
-    OrderItemDto getOrderItem(Long orderId, Long itemId);
+    OrderItemDto getOrderItem(Long orderId, Long itemId, Long userId);
 }
