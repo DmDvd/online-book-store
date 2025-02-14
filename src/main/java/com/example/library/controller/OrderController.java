@@ -6,7 +6,6 @@ import com.example.library.dto.order.UpdateOrderStatusRequestDto;
 import com.example.library.dto.orderitem.OrderItemDto;
 import com.example.library.model.User;
 import com.example.library.service.order.OrderService;
-import com.example.library.service.orderitem.OrderItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/orders")
 public class OrderController {
     private final OrderService orderService;
-    private final OrderItemService orderItemService;
 
     @Operation(summary = "Create an order",
             description = "Place an order for books in the shopping cart")
@@ -53,14 +51,14 @@ public class OrderController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{orderId}/items")
     public List<OrderItemDto> gettingItemsOnTheOrders(@PathVariable Long orderId) {
-        return orderItemService.getOrderItems(orderId);
+        return orderService.getOrderItems(orderId);
     }
 
     @Operation(summary = "Get order item", description = "Retrieve item from a specific order")
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{orderId}/items/{itemId}")
     public OrderItemDto getOrderItems(@PathVariable Long orderId, @PathVariable Long itemId) {
-        return orderItemService.getOrderItem(orderId, itemId);
+        return orderService.getOrderItem(orderId, itemId);
     }
 
     @Operation(summary = "Update order status", description = "Change the status of an order")
