@@ -17,7 +17,6 @@ import com.example.library.repository.orderitem.OrderItemRepository;
 import com.example.library.repository.shoppingcart.ShoppingCartRepository;
 import com.example.library.repository.user.UserRepository;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,33 +45,14 @@ public class OrderServiceImpl implements OrderService {
         if (shoppingCart.getCartItem().isEmpty()) {
             throw new IllegalStateException("Shopping cart is empty");
         }
+        Order order = createOrder(requestDto, user);
 
-        Order order = new Order();
-        order.setUser(user);
-        order.setStatus(Order.Status.PENDING);
-        order.setOrderDate(LocalDateTime.now());
-        order.setShippingAddress(requestDto.getShippingAddress());
-
-        BigDecimal total = BigDecimal.ZERO;
-        Set<OrderItem> orderItems = new HashSet<>();
-
-        for (CartItem cartItem : shoppingCart.getCartItem()) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setBook(cartItem.getBook());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getBook().getPrice()
-                    .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
-
-            orderItems.add(orderItem);
-            total = total.add(orderItem.getPrice());
-        }
+        Set<OrderItem> orderItems = createOrderItems(order, shoppingCart);
 
         order.setOrderItem(orderItems);
-        order.setTotal(total);
+        order.setTotal(calculateTotal(orderItems));
 
         orderRepository.save(order);
-        orderItemRepository.saveAll(orderItems);
 
         shoppingCart.getCartItem().clear();
         shoppingCartRepository.save(shoppingCart);
@@ -121,5 +101,34 @@ public class OrderServiceImpl implements OrderService {
                         + " in order id: " + orderId + " for user id: " + userId)
         );
         return orderItemMapper.toDto(orderItem);
+    }
+
+    private Order createOrder(CreateOrderRequestDto requestDto, User user) {
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(Order.Status.PENDING);
+        order.setShippingAddress(requestDto.getShippingAddress());
+        return order;
+    }
+
+    private Set<OrderItem> createOrderItems(Order order, ShoppingCart shoppingCart) {
+        Set<OrderItem> orderItems = new HashSet<>();
+        for (CartItem cartItem : shoppingCart.getCartItem()) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setBook(cartItem.getBook());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getBook()
+                    .getPrice()
+                    .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+            orderItems.add(orderItem);
+        }
+        return orderItems;
+    }
+
+    private BigDecimal calculateTotal(Set<OrderItem> orderItems) {
+        return orderItems.stream()
+                .map(OrderItem::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
