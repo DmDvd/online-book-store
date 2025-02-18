@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -39,6 +40,7 @@ public class Order {
     private Status status;
     @Column(nullable = false)
     private BigDecimal total;
+    @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime orderDate;
     @Column(nullable = false)
