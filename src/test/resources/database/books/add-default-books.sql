@@ -1,0 +1,3 @@
+INSERT INTO books (id, title, author, isbn, price, description, cover_image, categoryIds) VALUES (1, 'Sample Book 1', 'Author A', '0-306-40615-2', 149.99, 'Another sample book description A', 'http://example.com/cover1.jpg');
+INSERT INTO books (id, title, author, isbn, price, description, cover_image, categoryIds) VALUES (2, 'Sample Book 2', 'Author B', '0-405-50617-3', 249.99, 'Another sample book description B', 'http://example.com/cover2.jpg');
+INSERT INTO books (id, title, author, isbn, price, description, cover_image, categoryIds) VALUES (2, 'Sample Book 3', 'Author C', '0-725-52347-4', 349.99, 'Another sample book description C', 'http://example.com/cover3.jpg');

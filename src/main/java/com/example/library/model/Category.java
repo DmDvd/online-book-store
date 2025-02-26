@@ -8,11 +8,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 @SQLDelete(sql = "UPDATE categories SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 @Entity
