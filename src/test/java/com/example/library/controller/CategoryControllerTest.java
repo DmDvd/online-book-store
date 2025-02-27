@@ -1,5 +1,7 @@
 package com.example.library.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -8,8 +10,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.library.config.CustomMySqlContainer;
 import com.example.library.config.PagedCategoryResponse;
+import com.example.library.config.TestUtil;
 import com.example.library.dto.book.BookDtoWithoutCategoryIds;
 import com.example.library.dto.category.CategoryDto;
 import com.example.library.dto.category.CreateCategoryRequestDto;
@@ -18,9 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,14 +34,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,21 +46,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CategoryControllerTest {
 
-    protected static MockMvc mockMvc;
-
-    private static final String DB_NAME = "books";
-    private static final String TEST_USER = "test";
-    private static final String TEST_PASSWORD = "test";
-    private static final String SPRING_URL = "spring.datasource.url";
-    private static final String SPRING_USERNAME = "spring.datasource.username";
-    private static final String SPRING_PASSWORD = "spring.datasource.password";
-    private static final String SPRING_DRIVER_CLASS = "spring.datasource.driver-class-name";
-
-    @Container
-    private static final CustomMySqlContainer mysql = CustomMySqlContainer.getInstance()
-            .withDatabaseName(DB_NAME)
-            .withUsername(TEST_USER)
-            .withPassword(TEST_PASSWORD);
+    private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -71,16 +54,11 @@ public class CategoryControllerTest {
     @MockitoBean
     private CategoryService categoryService;
 
-    @DynamicPropertySource
-    static void configureProperties(@NotNull DynamicPropertyRegistry registry) {
-        registry.add(SPRING_URL, mysql::getJdbcUrl);
-        registry.add(SPRING_USERNAME, mysql::getUsername);
-        registry.add(SPRING_PASSWORD, mysql::getPassword);
-        registry.add(SPRING_DRIVER_CLASS, mysql::getDriverClassName);
-    }
+    @Autowired
+    private WebApplicationContext applicationContext;
 
-    @BeforeAll
-    static void beforeAll(@Autowired WebApplicationContext applicationContext) throws SQLException {
+    @BeforeEach
+    void beforeEach() throws SQLException {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(applicationContext)
                 .apply(springSecurity())
@@ -91,14 +69,9 @@ public class CategoryControllerTest {
     @Test
     @DisplayName("Create a new category - should return created category")
     void createCategory_ValidRequestDto_Success() throws Exception {
-        CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto()
-                .setName("Fiction")
-                .setDescription("Fiction books");
+        CreateCategoryRequestDto requestDto = TestUtil.createCategoryRequestDto();
 
-        CategoryDto expected = new CategoryDto()
-                .setId(1L)
-                .setName(requestDto.getName())
-                .setDescription(requestDto.getDescription());
+        CategoryDto expected = TestUtil.createCategoryDto(1L);
         Mockito.when(categoryService
                 .save(Mockito.any(CreateCategoryRequestDto.class)))
                 .thenReturn(expected);
@@ -113,10 +86,10 @@ public class CategoryControllerTest {
 
         CategoryDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
                 CategoryDto.class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        Assertions.assertEquals(expected.getName(), actual.getName());
-        Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getDescription(), actual.getDescription());
     }
 
     @WithMockUser(username = "user", roles = {"USER"})
@@ -124,10 +97,7 @@ public class CategoryControllerTest {
     @DisplayName("Get category by ID - should return category details")
     void getCategoryById_GivenCategoryById_ShouldReturnCategory() throws Exception {
         Long id = 1L;
-        CategoryDto expected = new CategoryDto()
-                .setId(id)
-                .setName("Fiction")
-                .setDescription("Fiction book");
+        CategoryDto expected = TestUtil.createCategoryDto(id);
 
         Mockito.when(categoryService.getById(id)).thenReturn(expected);
         MvcResult result = mockMvc.perform(get("/categories/{id}", 1)
@@ -139,10 +109,10 @@ public class CategoryControllerTest {
         String content = result.getResponse().getContentAsString();
         CategoryDto actual = objectMapper.readValue(content, CategoryDto.class);
 
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        Assertions.assertEquals(expected.getId(), actual.getId());
-        Assertions.assertEquals(expected.getName(), actual.getName());
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getName(), actual.getName());
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -159,13 +129,9 @@ public class CategoryControllerTest {
     @DisplayName("Update category - should return updated category")
     void updateCategory_ValidUpdateCategory_ShouldReturnCategory() throws Exception {
         Long id = 1L;
-        CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto()
-                .setName("Fiction")
-                .setDescription("Fiction books");
+        CreateCategoryRequestDto requestDto = TestUtil.createCategoryRequestDto();
 
-        CategoryDto expected = new CategoryDto()
-                .setName(requestDto.getName())
-                .setDescription(requestDto.getDescription());
+        CategoryDto expected = TestUtil.createCategoryDto(id);
 
         Mockito.when(categoryService.update(id, requestDto)).thenReturn(expected);
 
@@ -178,9 +144,9 @@ public class CategoryControllerTest {
         String content = result.getResponse().getContentAsString();
         CategoryDto actual = objectMapper.readValue(content, CategoryDto.class);
 
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(expected.getName(), actual.getName());
-        Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+        assertNotNull(actual);
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getDescription(), actual.getDescription());
     }
 
     @WithMockUser
@@ -214,9 +180,9 @@ public class CategoryControllerTest {
         BookDtoWithoutCategoryIds[] actual = objectMapper.readValue(
                 result.getResponse().getContentAsByteArray(), BookDtoWithoutCategoryIds[].class
         );
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(expected.size(), actual.length);
-        Assertions.assertEquals(expected.getFirst().getId(), actual[0].getId());
+        assertNotNull(actual);
+        assertEquals(expected.size(), actual.length);
+        assertEquals(expected.getFirst().getId(), actual[0].getId());
     }
 
     @WithMockUser
@@ -225,18 +191,9 @@ public class CategoryControllerTest {
     void getAllCategories_ShouldReturnPagedCategories() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
         List<CategoryDto> categoryList = List.of(
-                new CategoryDto()
-                        .setId(1L)
-                        .setName("Fiction")
-                        .setDescription("Description fiction"),
-                new CategoryDto()
-                        .setId(2L)
-                        .setName("Science")
-                        .setDescription("Description science"),
-                new CategoryDto()
-                        .setId(3L)
-                        .setName("History")
-                        .setDescription("Description history")
+                TestUtil.createCategoryDto(1L),
+                TestUtil.createCategoryDto(2L),
+                TestUtil.createCategoryDto(3L)
         );
         Page<CategoryDto> expected = new PageImpl<>(categoryList, pageable, categoryList.size());
 
@@ -252,6 +209,6 @@ public class CategoryControllerTest {
         PagedCategoryResponse actual = objectMapper
                 .readValue(result.getResponse().getContentAsString(),
                 PagedCategoryResponse.class);
-        Assertions.assertEquals(expected.getContent().size(), actual.getContent().size());
+        assertEquals(expected.getContent().size(), actual.getContent().size());
     }
 }

@@ -1,5 +1,7 @@
 package com.example.library.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -8,19 +10,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.library.config.CustomMySqlContainer;
 import com.example.library.config.PagedBookResponse;
+import com.example.library.config.TestUtil;
 import com.example.library.dto.book.BookDto;
 import com.example.library.dto.book.BookSearchParametersDto;
 import com.example.library.dto.book.CreateBookRequestDto;
 import com.example.library.service.book.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,36 +32,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(MockitoExtension.class)
-@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookControllerTest {
 
-    protected static MockMvc mockMvc;
-
-    private static final String DB_NAME = "books";
-    private static final String TEST_USER = "test";
-    private static final String TEST_PASSWORD = "test";
-    private static final String SPRING_URL = "spring.datasource.url";
-    private static final String SPRING_USERNAME = "spring.datasource.username";
-    private static final String SPRING_PASSWORD = "spring.datasource.password";
-    private static final String SPRING_DRIVER_CLASS = "spring.datasource.driver-class-name";
-
-    @Container
-    private static final CustomMySqlContainer mysql = CustomMySqlContainer.getInstance()
-            .withDatabaseName(DB_NAME)
-            .withUsername(TEST_USER)
-            .withPassword(TEST_PASSWORD);
+    private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -70,16 +50,11 @@ public class BookControllerTest {
     @MockitoBean
     private BookService bookService;
 
-    @DynamicPropertySource
-    static void configureProperties(@NotNull DynamicPropertyRegistry registry) {
-        registry.add(SPRING_URL, mysql::getJdbcUrl);
-        registry.add(SPRING_USERNAME, mysql::getUsername);
-        registry.add(SPRING_PASSWORD, mysql::getPassword);
-        registry.add(SPRING_DRIVER_CLASS, mysql::getDriverClassName);
-    }
+    @Autowired
+    private WebApplicationContext applicationContext;
 
-    @BeforeAll
-    static void beforeAll(@Autowired WebApplicationContext applicationContext) throws SQLException {
+    @BeforeEach
+    void beforeAll() throws SQLException {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(applicationContext)
                 .apply(springSecurity())
@@ -90,31 +65,16 @@ public class BookControllerTest {
     @Test
     @DisplayName("Create a new book - should return created book")
     void createBook_ValidRequestDto_Success() throws Exception {
-        CreateBookRequestDto requestDto = new CreateBookRequestDto()
-                .setTitle("Sample Book 1")
-                .setAuthor("Author B")
-                .setIsbn("0-306-40615-2")
-                .setPrice(BigDecimal.valueOf(149.99))
-                .setDescription("Another sample book description.")
-                .setCoverImage("http://example.com/cover1.jpg")
-                .setCategoriesId(List.of(1L));
+        CreateBookRequestDto requestDto = TestUtil.createBookRequestDto();
 
-        BookDto expected = new BookDto()
-                .setId(1L)
-                .setTitle(requestDto.getTitle())
-                .setAuthor(requestDto.getAuthor())
-                .setIsbn(requestDto.getIsbn())
-                .setPrice(requestDto.getPrice())
-                .setDescription(requestDto.getDescription())
-                .setCoverImage(requestDto.getCoverImage())
-                .setCategoryIds(requestDto.getCategoriesId());
+        BookDto expected = TestUtil.createBookDto(1L);
 
         Mockito.when(bookService.createBook(Mockito.any(CreateBookRequestDto.class)))
                 .thenReturn(expected);
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
-        MvcResult result = BookControllerTest.mockMvc.perform(post("/books")
+        MvcResult result = mockMvc.perform(post("/books")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -123,10 +83,10 @@ public class BookControllerTest {
 
         BookDto actual = objectMapper.readValue(result.getResponse()
                 .getContentAsString(), BookDto.class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
-        Assertions.assertEquals(expected.getPrice(), actual.getPrice());
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected.getTitle(), actual.getTitle());
+        assertEquals(expected.getPrice(), actual.getPrice());
     }
 
     @WithMockUser(username = "user", roles = {"USER"})
@@ -135,31 +95,14 @@ public class BookControllerTest {
     void getAll_GivenBookInCatalog_ShouldReturnAllBooks() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
         List<BookDto> expected = List.of(
-                new BookDto()
-                        .setId(1L)
-                        .setTitle("Sample Book 1")
-                        .setAuthor("Author A")
-                        .setIsbn("0-306-40615-2")
-                        .setPrice(BigDecimal.valueOf(149.99))
-                        .setDescription("Another sample book description A")
-                        .setCoverImage("http://example.com/cover1.jpg")
-                        .setCategoryIds(List.of(1L, 2L)),
-
-                new BookDto()
-                        .setId(2L)
-                        .setTitle("Sample Book 2")
-                        .setAuthor("Author B")
-                        .setIsbn("0-405-50617-3")
-                        .setPrice(BigDecimal.valueOf(249.99))
-                        .setDescription("Another sample book description B")
-                        .setCoverImage("http://example.com/cover2.jpg")
-                        .setCategoryIds(List.of(1L, 2L))
+                TestUtil.createBookDto(1L),
+                TestUtil.createBookDto(2L)
         );
         PageImpl<BookDto> bookDtos = new PageImpl<>(expected, pageable, expected.size());
 
         Mockito.when(bookService.getAll(Mockito.any(Pageable.class))).thenReturn(bookDtos);
 
-        MvcResult result = BookControllerTest.mockMvc.perform(
+        MvcResult result = mockMvc.perform(
                 get("/books")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("page", "0")
@@ -172,8 +115,8 @@ public class BookControllerTest {
                 result.getResponse().getContentAsByteArray(),
                 PagedBookResponse.class
         );
-        Assertions.assertEquals(2, actual.getContent().size());
-        Assertions.assertEquals(expected, actual.getContent());
+        assertEquals(2, actual.getContent().size());
+        assertEquals(expected, actual.getContent());
     }
 
     @WithMockUser(username = "user", roles = {"USER"})
@@ -181,15 +124,7 @@ public class BookControllerTest {
     @DisplayName("Find book by ID - should return book details")
     void findById_GivenBookInCatalogById_ShouldReturnBook() throws Exception {
 
-        BookDto expected = new BookDto()
-                .setId(1L)
-                .setTitle("Sample Book 1")
-                .setAuthor("Author A")
-                .setIsbn("0-306-40615-2")
-                .setPrice(BigDecimal.valueOf(149.99))
-                .setDescription("Another sample book description A")
-                .setCoverImage("http://example.com/cover1.jpg")
-                .setCategoryIds(List.of(1L, 2L));
+        BookDto expected = TestUtil.createBookDto(1L);
 
         Mockito.when(bookService.getBookById(1L)).thenReturn(expected);
 
@@ -201,10 +136,10 @@ public class BookControllerTest {
 
         String content = result.getResponse().getContentAsString();
         BookDto actual = objectMapper.readValue(content, BookDto.class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        Assertions.assertEquals(expected.getId(), actual.getId());
-        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getTitle(), actual.getTitle());
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -222,23 +157,9 @@ public class BookControllerTest {
     @DisplayName("Update book by ID - should return updated book")
     void updateBook_ValidUpdateBook_ShouldReturnUpdateBook() throws Exception {
         Long id = 1L;
-        CreateBookRequestDto requestDto = new CreateBookRequestDto()
-                .setTitle("Sample Book 1")
-                .setAuthor("Author B")
-                .setIsbn("0-306-40615-2")
-                .setPrice(BigDecimal.valueOf(149.99))
-                .setDescription("Another sample book description.")
-                .setCoverImage("http://example.com/cover1.jpg")
-                .setCategoriesId(List.of(1L));
+        CreateBookRequestDto requestDto = TestUtil.createBookRequestDto();
 
-        BookDto expected = new BookDto()
-                .setTitle(requestDto.getTitle())
-                .setAuthor(requestDto.getAuthor())
-                .setIsbn(requestDto.getIsbn())
-                .setPrice(requestDto.getPrice())
-                .setDescription(requestDto.getDescription())
-                .setCoverImage(requestDto.getCoverImage())
-                .setCategoryIds(requestDto.getCategoriesId());
+        BookDto expected = TestUtil.createBookDto(1L);
 
         Mockito.when(bookService.updateBook(id, requestDto)).thenReturn(expected);
 
@@ -251,9 +172,9 @@ public class BookControllerTest {
         String content = result.getResponse().getContentAsString();
         BookDto actual = objectMapper.readValue(content, BookDto.class);
 
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
-        Assertions.assertEquals(expected.getAuthor(), actual.getAuthor());
+        assertNotNull(actual);
+        assertEquals(expected.getTitle(), actual.getTitle());
+        assertEquals(expected.getAuthor(), actual.getAuthor());
         Mockito.verify(bookService).updateBook(id, requestDto);
     }
 
@@ -262,15 +183,7 @@ public class BookControllerTest {
     @DisplayName("Search books with parameters - should return matching books")
     void searchBooks_ValidSearchParameters_ReturnsBookDtos() throws Exception {
         List<BookDto> expected = List.of(
-                new BookDto()
-                        .setId(1L)
-                        .setTitle("Sample Book 1")
-                        .setAuthor("Author B")
-                        .setIsbn("0-306-40615-2")
-                        .setPrice(BigDecimal.valueOf(149.99))
-                        .setDescription("Another sample book description A")
-                        .setCoverImage("http://example.com/cover1.jpg")
-                        .setCategoryIds(List.of(1L, 2L))
+                TestUtil.createBookDto(1L)
         );
 
         Mockito.when(bookService
@@ -287,8 +200,8 @@ public class BookControllerTest {
 
         BookDto[] actual = objectMapper.readValue(result.getResponse()
                 .getContentAsByteArray(), BookDto[].class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(expected.size(), actual.length);
-        Assertions.assertEquals(expected.getFirst().getTitle(), actual[0].getTitle());
+        assertNotNull(actual);
+        assertEquals(expected.size(), actual.length);
+        assertEquals(expected.getFirst().getTitle(), actual[0].getTitle());
     }
 }
