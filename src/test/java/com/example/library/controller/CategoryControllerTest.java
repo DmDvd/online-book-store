@@ -3,6 +3,8 @@ package com.example.library.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -15,6 +17,7 @@ import com.example.library.config.TestUtil;
 import com.example.library.dto.book.BookDtoWithoutCategoryIds;
 import com.example.library.dto.category.CategoryDto;
 import com.example.library.dto.category.CreateCategoryRequestDto;
+import com.example.library.exception.EntityNotFoundException;
 import com.example.library.service.category.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
@@ -72,7 +75,7 @@ public class CategoryControllerTest {
         CreateCategoryRequestDto requestDto = TestUtil.createCategoryRequestDto();
 
         CategoryDto expected = TestUtil.createCategoryDto(1L);
-        Mockito.when(categoryService
+        when(categoryService
                 .save(Mockito.any(CreateCategoryRequestDto.class)))
                 .thenReturn(expected);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
@@ -92,6 +95,22 @@ public class CategoryControllerTest {
         assertEquals(expected.getDescription(), actual.getDescription());
     }
 
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Test
+    @DisplayName("Creating a category with invalid data should return a 400 Bad Request")
+    void createCategory_InvalidRequestDto_ShouldReturnBadRequest() throws Exception {
+        CreateCategoryRequestDto invalidRequest = new CreateCategoryRequestDto()
+                .setName("")
+                .setDescription("");
+        String jsonRequest = objectMapper.writeValueAsString(invalidRequest);
+
+        MvcResult result = mockMvc.perform(post("/categories")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
     @WithMockUser(username = "user", roles = {"USER"})
     @Test
     @DisplayName("Get category by ID - should return category details")
@@ -99,7 +118,7 @@ public class CategoryControllerTest {
         Long id = 1L;
         CategoryDto expected = TestUtil.createCategoryDto(id);
 
-        Mockito.when(categoryService.getById(id)).thenReturn(expected);
+        when(categoryService.getById(id)).thenReturn(expected);
         MvcResult result = mockMvc.perform(get("/categories/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -115,13 +134,26 @@ public class CategoryControllerTest {
         assertEquals(expected.getName(), actual.getName());
     }
 
+    @WithMockUser(username = "user", roles = {"USER"})
+    @Test
+    @DisplayName("Searching for a category by a non-existent ID should return 404 Not Found")
+    void getCategoryById_GivenCategoryByInvalidId_ShouldReturnNotFound() throws Exception {
+        Long invalidId = 100L;
+        when(categoryService.getById(invalidId))
+                .thenThrow(new EntityNotFoundException("Category not found"));
+
+        mockMvc.perform(get("/categories/{id}", invalidId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @Test
     @DisplayName("Delete category by ID - should return no content")
     void deleteCategory_DeleteCategoryById_ShouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/categories/{id}", 1))
                 .andExpect(status().isNoContent());
-        Mockito.verify(categoryService, times(1)).deleteById(1L);
+        verify(categoryService, times(1)).deleteById(1L);
     }
 
     @Test
@@ -133,7 +165,7 @@ public class CategoryControllerTest {
 
         CategoryDto expected = TestUtil.createCategoryDto(id);
 
-        Mockito.when(categoryService.update(id, requestDto)).thenReturn(expected);
+        when(categoryService.update(id, requestDto)).thenReturn(expected);
 
         MvcResult result = mockMvc.perform(put("/categories/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -147,6 +179,23 @@ public class CategoryControllerTest {
         assertNotNull(actual);
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getDescription(), actual.getDescription());
+    }
+
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Test
+    @DisplayName("Updating a non-existent category should return 404 Not Found")
+    void updateCategory_NonExistentId_ShouldReturnNotFound() throws Exception {
+        Long id = 100L;
+        CreateCategoryRequestDto validDto = TestUtil.createCategoryRequestDto();
+        when(categoryService.update(id, validDto))
+                .thenThrow(new EntityNotFoundException("Category with id " + id + " not found"));
+
+        String jsonRequest = objectMapper.writeValueAsString(validDto);
+        MvcResult result = mockMvc.perform(put("/categories/{id}", id)
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
     }
 
     @WithMockUser
@@ -169,7 +218,7 @@ public class CategoryControllerTest {
                         .setPrice(BigDecimal.valueOf(249.99))
         );
 
-        Mockito.when(categoryService.getBooksByCategoryId(categoryId)).thenReturn(expected);
+        when(categoryService.getBooksByCategoryId(categoryId)).thenReturn(expected);
 
         MvcResult result = mockMvc.perform(get("/categories/{id}/books",
                         categoryId)
@@ -197,7 +246,7 @@ public class CategoryControllerTest {
         );
         Page<CategoryDto> expected = new PageImpl<>(categoryList, pageable, categoryList.size());
 
-        Mockito.when(categoryService.findAll(Mockito.any(Pageable.class)))
+        when(categoryService.findAll(Mockito.any(Pageable.class)))
                 .thenReturn(expected);
 
         MvcResult result = mockMvc.perform(get("/categories")
