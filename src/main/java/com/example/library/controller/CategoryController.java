@@ -3,7 +3,6 @@ package com.example.library.controller;
 import com.example.library.dto.book.BookDtoWithoutCategoryIds;
 import com.example.library.dto.category.CategoryDto;
 import com.example.library.dto.category.CreateCategoryRequestDto;
-import com.example.library.exception.EntityNotFoundException;
 import com.example.library.service.category.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @Tag(name = "Category management", description = "endpoints for managing categories")
 @RequiredArgsConstructor
@@ -51,11 +49,7 @@ public class CategoryController {
     @Operation(summary = "Find category by id", description = "Get a category by id")
     @GetMapping("/{id}")
     public CategoryDto getCategoryById(@PathVariable Long id) {
-        try {
-            return categoryService.getById(id);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
-        }
+        return categoryService.getById(id);
     }
 
     @Operation(summary = "Update category by id", description = "Update category by id")
@@ -63,11 +57,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public CategoryDto updateCategory(@PathVariable Long id,
                                       @RequestBody @Valid CreateCategoryRequestDto requestDto) {
-        try {
-            return categoryService.update(id, requestDto);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
-        }
+        return categoryService.update(id, requestDto);
     }
 
     @Operation(summary = "Delete category by id", description = "Delete category by id")

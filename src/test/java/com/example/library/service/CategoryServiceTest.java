@@ -2,6 +2,8 @@ package com.example.library.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,7 +18,6 @@ import com.example.library.repository.category.CategoryRepository;
 import com.example.library.service.category.CategoryServiceImpl;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,9 +89,9 @@ public class CategoryServiceTest {
 
         CategoryDto result = categoryService.getById(categoryId);
 
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(categoryDto.getName(), result.getName());
-        Assertions.assertEquals(categoryDto.getDescription(), result.getDescription());
+        assertNotNull(result);
+        assertEquals(categoryDto.getName(), result.getName());
+        assertEquals(categoryDto.getDescription(), result.getDescription());
     }
 
     @Test
@@ -107,7 +108,7 @@ public class CategoryServiceTest {
         String expected = "Can't find category by id " + categoryId;
         String actual = exception.getMessage();
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test

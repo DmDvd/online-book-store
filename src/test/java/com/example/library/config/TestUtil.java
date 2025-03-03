@@ -16,7 +16,7 @@ public class TestUtil {
                 .setPrice(BigDecimal.valueOf(149.99))
                 .setDescription("Another sample book description.")
                 .setCoverImage("http://example.com/cover1.jpg")
-                .setCategoriesId(List.of(1L));
+                .setCategoriesId(List.of(1L, 2L));
     }
 
     public static BookDto createBookDto(Long id) {

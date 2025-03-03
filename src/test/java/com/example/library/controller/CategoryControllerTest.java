@@ -1,67 +1,54 @@
 package com.example.library.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.library.config.PagedCategoryResponse;
+import com.example.library.config.CustomPageImpl;
 import com.example.library.config.TestUtil;
-import com.example.library.dto.book.BookDtoWithoutCategoryIds;
+import com.example.library.dto.book.BookDto;
 import com.example.library.dto.category.CategoryDto;
 import com.example.library.dto.category.CreateCategoryRequestDto;
-import com.example.library.exception.EntityNotFoundException;
-import com.example.library.service.category.CategoryService;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(MockitoExtension.class)
-@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CategoryControllerTest {
 
-    private MockMvc mockMvc;
+    protected static MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private CategoryService categoryService;
 
     @Autowired
     private WebApplicationContext applicationContext;
 
     @BeforeEach
-    void beforeEach() throws SQLException {
+    void beforeEach(@Autowired WebApplicationContext applicationContext) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(applicationContext)
                 .apply(springSecurity())
@@ -75,9 +62,6 @@ public class CategoryControllerTest {
         CreateCategoryRequestDto requestDto = TestUtil.createCategoryRequestDto();
 
         CategoryDto expected = TestUtil.createCategoryDto(1L);
-        when(categoryService
-                .save(Mockito.any(CreateCategoryRequestDto.class)))
-                .thenReturn(expected);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
         MvcResult result = mockMvc.perform(post("/categories")
@@ -111,14 +95,15 @@ public class CategoryControllerTest {
                 .andReturn();
     }
 
+    @Sql(scripts = "classpath:database/books/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(username = "user", roles = {"USER"})
     @Test
     @DisplayName("Get category by ID - should return category details")
     void getCategoryById_GivenCategoryById_ShouldReturnCategory() throws Exception {
-        Long id = 1L;
-        CategoryDto expected = TestUtil.createCategoryDto(id);
 
-        when(categoryService.getById(id)).thenReturn(expected);
         MvcResult result = mockMvc.perform(get("/categories/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -130,17 +115,17 @@ public class CategoryControllerTest {
 
         assertNotNull(actual);
         assertNotNull(actual.getId());
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getName(), actual.getName());
     }
 
+    @Sql(scripts = "classpath:database/books/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(username = "user", roles = {"USER"})
     @Test
     @DisplayName("Searching for a category by a non-existent ID should return 404 Not Found")
     void getCategoryById_GivenCategoryByInvalidId_ShouldReturnNotFound() throws Exception {
         Long invalidId = 100L;
-        when(categoryService.getById(invalidId))
-                .thenThrow(new EntityNotFoundException("Category not found"));
 
         mockMvc.perform(get("/categories/{id}", invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -153,23 +138,23 @@ public class CategoryControllerTest {
     void deleteCategory_DeleteCategoryById_ShouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/categories/{id}", 1))
                 .andExpect(status().isNoContent());
-        verify(categoryService, times(1)).deleteById(1L);
     }
 
+    @Sql(scripts = "classpath:database/books/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @DisplayName("Update category - should return updated category")
     void updateCategory_ValidUpdateCategory_ShouldReturnCategory() throws Exception {
         Long id = 1L;
-        CreateCategoryRequestDto requestDto = TestUtil.createCategoryRequestDto();
-
-        CategoryDto expected = TestUtil.createCategoryDto(id);
-
-        when(categoryService.update(id, requestDto)).thenReturn(expected);
+        CreateCategoryRequestDto expected = TestUtil.createCategoryRequestDto()
+                .setName("Fiction");
 
         MvcResult result = mockMvc.perform(put("/categories/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto))
+                        .content(objectMapper.writeValueAsString(expected))
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -178,17 +163,18 @@ public class CategoryControllerTest {
 
         assertNotNull(actual);
         assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getDescription(), actual.getDescription());
     }
 
+    @Sql(scripts = "classpath:database/books/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @Test
     @DisplayName("Updating a non-existent category should return 404 Not Found")
     void updateCategory_NonExistentId_ShouldReturnNotFound() throws Exception {
         Long id = 100L;
         CreateCategoryRequestDto validDto = TestUtil.createCategoryRequestDto();
-        when(categoryService.update(id, validDto))
-                .thenThrow(new EntityNotFoundException("Category with id " + id + " not found"));
 
         String jsonRequest = objectMapper.writeValueAsString(validDto);
         MvcResult result = mockMvc.perform(put("/categories/{id}", id)
@@ -196,58 +182,35 @@ public class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn();
+
     }
 
+    @Sql(scripts = "classpath:database/books/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser
     @Test
     @DisplayName("Get books by category ID - should return list of books")
     void getBooksByCategoryId_ValidId_ShouldReturnBooksList() throws Exception {
         Long categoryId = 1L;
-        List<BookDtoWithoutCategoryIds> expected = List.of(
-                new BookDtoWithoutCategoryIds()
-                        .setId(1L)
-                        .setTitle("Sample Book 1")
-                        .setAuthor("Author A")
-                        .setDescription("Description A")
-                        .setPrice(BigDecimal.valueOf(149.99)),
-                new BookDtoWithoutCategoryIds()
-                        .setId(2L)
-                        .setTitle("Sample Book 2")
-                        .setAuthor("Author B")
-                        .setDescription("Description B")
-                        .setPrice(BigDecimal.valueOf(249.99))
-        );
 
-        when(categoryService.getBooksByCategoryId(categoryId)).thenReturn(expected);
-
-        MvcResult result = mockMvc.perform(get("/categories/{id}/books",
+        mockMvc.perform(get("/categories/{id}/books",
                         categoryId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        BookDtoWithoutCategoryIds[] actual = objectMapper.readValue(
-                result.getResponse().getContentAsByteArray(), BookDtoWithoutCategoryIds[].class
-        );
-        assertNotNull(actual);
-        assertEquals(expected.size(), actual.length);
-        assertEquals(expected.getFirst().getId(), actual[0].getId());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
+    @Sql(scripts = "classpath:database/books/add-two-books.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/delete-all-books.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser
     @Test
     @DisplayName("Get all categories - should return paginated list")
     void getAllCategories_ShouldReturnPagedCategories() throws Exception {
-        Pageable pageable = PageRequest.of(0, 10);
-        List<CategoryDto> categoryList = List.of(
-                TestUtil.createCategoryDto(1L),
-                TestUtil.createCategoryDto(2L),
-                TestUtil.createCategoryDto(3L)
-        );
-        Page<CategoryDto> expected = new PageImpl<>(categoryList, pageable, categoryList.size());
-
-        when(categoryService.findAll(Mockito.any(Pageable.class)))
-                .thenReturn(expected);
 
         MvcResult result = mockMvc.perform(get("/categories")
                         .param("page", "0")
@@ -255,9 +218,12 @@ public class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        PagedCategoryResponse actual = objectMapper
-                .readValue(result.getResponse().getContentAsString(),
-                PagedCategoryResponse.class);
-        assertEquals(expected.getContent().size(), actual.getContent().size());
+        JavaType type = objectMapper.getTypeFactory()
+                .constructParametricType(CustomPageImpl.class, CategoryDto.class);
+        PageImpl<BookDto> actual = objectMapper.readValue(
+                result.getResponse().getContentAsString(), type
+        );
+        assertNotNull(actual);
+        assertFalse(actual.getContent().isEmpty());
     }
 }

@@ -2,6 +2,8 @@ package com.example.library.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -21,7 +23,6 @@ import com.example.library.service.book.BookServiceImpl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,9 +72,9 @@ public class BookServiceTest {
 
         BookDto actual = bookService.getBookById(bookId);
 
-        Assertions.assertNotNull(actual);
-        Assertions.assertEquals(bookDto.getTitle(), actual.getTitle());
-        Assertions.assertEquals(bookDto.getAuthor(), actual.getAuthor());
+        assertNotNull(actual);
+        assertEquals(bookDto.getTitle(), actual.getTitle());
+        assertEquals(bookDto.getAuthor(), actual.getAuthor());
     }
 
     @Test
@@ -86,7 +87,7 @@ public class BookServiceTest {
         );
         String expected = "Can't find book by id: " + bookId;
         String actual = exception.getMessage();
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test

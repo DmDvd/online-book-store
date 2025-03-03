@@ -3,7 +3,6 @@ package com.example.library.controller;
 import com.example.library.dto.book.BookDto;
 import com.example.library.dto.book.BookSearchParametersDto;
 import com.example.library.dto.book.CreateBookRequestDto;
-import com.example.library.exception.EntityNotFoundException;
 import com.example.library.service.book.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @Tag(name = "Book management", description = "endpoints for managing books")
 @RequiredArgsConstructor
@@ -44,11 +42,7 @@ public class BookController {
     @Operation(summary = "Find book by id", description = "Get a book by id")
     @GetMapping("/{id}")
     public BookDto findById(@PathVariable Long id) {
-        try {
-            return bookService.getBookById(id);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
-        }
+        return bookService.getBookById(id);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -72,11 +66,7 @@ public class BookController {
     @PutMapping("/{id}")
     public BookDto updateBook(@PathVariable Long id,
                               @Valid @RequestBody CreateBookRequestDto requestDto) {
-        try {
-            return bookService.updateBook(id, requestDto);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
-        }
+        return bookService.updateBook(id, requestDto);
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
