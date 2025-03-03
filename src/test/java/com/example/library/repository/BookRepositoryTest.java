@@ -37,15 +37,15 @@ public class BookRepositoryTest {
     @DisplayName("Find all books by category ID - should return books belonging to category")
     void findAllByCategoryId_CategoryWithBooks_ReturnsBooks() {
         Category category = new Category()
-                .setName("Fiction")
-                .setDescription("Fiction books");
+                .setName("Fiction ACB")
+                .setDescription("Fiction books acb");
 
         categoryRepository.save(category);
 
         Book book = new Book()
                 .setTitle("Sample Book 1")
                 .setAuthor("Author B")
-                .setIsbn("0-306-40615-2")
+                .setIsbn("0-306-40618-2")
                 .setPrice(BigDecimal.valueOf(149.99))
                 .setDescription("Another sample book description.")
                 .setCoverImage("http://example.com/cover1.jpg")

@@ -55,6 +55,8 @@ public class CategoryControllerTest {
                 .build();
     }
 
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @Test
     @DisplayName("Create a new category - should return created category")
@@ -79,6 +81,8 @@ public class CategoryControllerTest {
         assertEquals(expected.getDescription(), actual.getDescription());
     }
 
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @Test
     @DisplayName("Creating a category with invalid data should return a 400 Bad Request")
@@ -203,9 +207,9 @@ public class CategoryControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    @Sql(scripts = "classpath:database/books/add-two-books.sql",
+    @Sql(scripts = "classpath:database/books/category/add-two-category.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/books/delete-all-books.sql",
+    @Sql(scripts = "classpath:database/books/category/delete-all-category.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser
     @Test

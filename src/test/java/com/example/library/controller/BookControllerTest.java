@@ -174,7 +174,7 @@ public class BookControllerTest {
 
     }
 
-    @Sql(scripts = "classpath:database/books/add-one-books.sql",
+    @Sql(scripts = "classpath:database/books/add-two-books.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/books/delete-all-books.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
