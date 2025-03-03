@@ -164,8 +164,8 @@ public class BookServiceTest {
         assertThat(bookDtos).hasSize(1);
         assertThat(bookDtos.getContent()).containsExactly(bookDto);
 
-        verify(bookRepository, times(1)).findAll(pageable);
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookRepository).findAll(pageable);
+        verify(bookMapper).toDto(book);
     }
 
     @Test
@@ -177,7 +177,7 @@ public class BookServiceTest {
 
         bookService.deleteById(bookId);
 
-        verify(bookRepository, times(1)).deleteById(bookId);
+        verify(bookRepository).deleteById(bookId);
         verifyNoMoreInteractions(bookRepository);
     }
 
@@ -277,9 +277,8 @@ public class BookServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst()).isEqualTo(bookDto);
 
-        verify(bookRepository, times(1)).findAll(specification);
-        verify(bookMapper, times(1)).toDto(book);
-        verify(bookSpecificationBuilder, times(1))
-                .build(params);
+        verify(bookRepository).findAll(specification);
+        verify(bookMapper).toDto(book);
+        verify(bookSpecificationBuilder).build(params);
     }
 }

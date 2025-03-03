@@ -63,9 +63,9 @@ public class CategoryServiceTest {
         CategoryDto result = categoryService.save(requestDto);
 
         assertThat(result).isEqualTo(categoryDto);
-        verify(categoryMapper, times(1)).toEntity(requestDto);
-        verify(categoryRepository, times(1)).save(category);
-        verify(categoryMapper, times(1)).toDto(category);
+        verify(categoryMapper).toEntity(requestDto);
+        verify(categoryRepository).save(category);
+        verify(categoryMapper).toDto(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -120,7 +120,7 @@ public class CategoryServiceTest {
 
         categoryService.deleteById(categoryId);
 
-        verify(categoryRepository, times(1)).deleteById(categoryId);
+        verify(categoryRepository).deleteById(categoryId);
         verifyNoMoreInteractions(categoryRepository);
     }
 
@@ -149,8 +149,8 @@ public class CategoryServiceTest {
         assertThat(categoryDtos).hasSize(1);
         assertThat(categoryDtos.getContent()).containsExactly(categoryDto);
 
-        verify(categoryRepository, times(1)).findAll(pageable);
-        verify(categoryMapper, times(1)).toDto(category);
+        verify(categoryRepository).findAll(pageable);
+        verify(categoryMapper).toDto(category);
     }
 
     @Test
