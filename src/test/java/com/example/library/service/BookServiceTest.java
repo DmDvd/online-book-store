@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -125,9 +124,9 @@ public class BookServiceTest {
         BookDto savedBookDto = bookService.createBook(requestDto);
 
         assertThat(savedBookDto).isEqualTo(bookDto);
-        verify(bookMapper, times(1)).toModel(requestDto);
-        verify(bookRepository, times(1)).save(book);
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookMapper).toModel(requestDto);
+        verify(bookRepository).save(book);
+        verify(bookMapper).toDto(book);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
