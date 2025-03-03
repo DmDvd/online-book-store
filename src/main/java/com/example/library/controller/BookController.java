@@ -64,10 +64,12 @@ public class BookController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Update book by id", description = "Update book by id")
     @PutMapping("/{id}")
-    public BookDto updateBook(@PathVariable Long id, @RequestBody CreateBookRequestDto requestDto) {
+    public BookDto updateBook(@PathVariable Long id,
+                              @Valid @RequestBody CreateBookRequestDto requestDto) {
         return bookService.updateBook(id, requestDto);
     }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
     @Operation(summary = "Search book",
             description = "Search books using specific parameters, such as title, author, or genre")
     @GetMapping("/search")
