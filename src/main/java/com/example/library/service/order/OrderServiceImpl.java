@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
                 () -> new EntityNotFoundException("Can't find user by id: " + userId));
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserId(userId).orElseThrow(
                 () -> new EntityNotFoundException("Can't find shopping cart by id: " + userId));
-        if (shoppingCart.getCartItem().isEmpty()) {
+        if (shoppingCart.getCartItems().isEmpty()) {
             throw new IllegalStateException("Shopping cart is empty");
         }
         Order order = createOrder(requestDto, user);
@@ -54,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.save(order);
 
-        shoppingCart.getCartItem().clear();
+        shoppingCart.getCartItems().clear();
         shoppingCartRepository.save(shoppingCart);
 
         return orderMapper.toDto(order);
@@ -113,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
 
     private Set<OrderItem> createOrderItems(Order order, ShoppingCart shoppingCart) {
         Set<OrderItem> orderItems = new HashSet<>();
-        for (CartItem cartItem : shoppingCart.getCartItem()) {
+        for (CartItem cartItem : shoppingCart.getCartItems()) {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setBook(cartItem.getBook());

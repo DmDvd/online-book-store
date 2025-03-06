@@ -1,5 +1,7 @@
 package com.example.library.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -76,8 +78,10 @@ public class ShoppingCartControllerTest {
         String content = result.getResponse().getContentAsString();
         ShoppingCartDto actual = objectMapper.readValue(content, ShoppingCartDto.class);
 
+        System.out.println(result.getResponse().getContentAsString());
         assertNotNull("Must not be equal to null",actual);
         assertNotNull("Must not be equal to null",actual.getId());
+        assertEquals(1L, actual.getUserId());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -98,8 +102,12 @@ public class ShoppingCartControllerTest {
                         .andReturn();
         ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
+        System.out.println(result.getResponse().getContentAsString());
         assertNotNull("ShoppingCartDto must not be null",actual);
         assertNotNull("ShoppingCartDto must not be null",actual.getId());
+        assertEquals(1L, actual.getUserId());
+        assertNotNull("Cart items must not be null", actual.getCartItems());
+
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -137,7 +145,7 @@ public class ShoppingCartControllerTest {
         ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
 
-        assertNotNull("ShoppingCartDto must not be null",actual);
+        assertNotNull("ShoppingCartDto must not be null", actual);
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",

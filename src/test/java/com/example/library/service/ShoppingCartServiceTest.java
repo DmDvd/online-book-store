@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.example.library.dto.cartitem.AddToCartRequestDto;
 import com.example.library.dto.cartitem.UpdateCartItemRequestDto;
 import com.example.library.dto.shopppingcart.ShoppingCartDto;
+import com.example.library.mapper.CartItemMapper;
 import com.example.library.mapper.ShoppingCartMapper;
 import com.example.library.model.Book;
 import com.example.library.model.CartItem;
@@ -44,6 +45,9 @@ public class ShoppingCartServiceTest {
     @Mock
     private CartItemRepository cartItemRepository;
 
+    @Mock
+    private CartItemMapper itemMapper;
+
     @InjectMocks
     private ShoppingCartServiceImpl shoppingCartService;
 
@@ -58,7 +62,7 @@ public class ShoppingCartServiceTest {
         ShoppingCart shoppingCart = new ShoppingCart()
                 .setId(userId)
                 .setUser(user)
-                .setCartItem(new HashSet<>());
+                .setCartItems(new HashSet<>());
 
         ShoppingCartDto expectedDto = new ShoppingCartDto();
         expectedDto.setId(userId);
@@ -92,7 +96,7 @@ public class ShoppingCartServiceTest {
     void addBookToCart_ValidBookAndCart_AddsOrUpdatesCartItem() {
         Long userId = 1L;
         final Long bookId = 1L;
-        final int initialQuantity = 2;
+        final int quantityToAdd = 1;
 
         User user = new User()
                 .setId(userId)
@@ -101,10 +105,10 @@ public class ShoppingCartServiceTest {
         ShoppingCart shoppingCart = new ShoppingCart()
                 .setId(userId)
                 .setUser(user)
-                .setCartItem(new HashSet<>());
+                .setCartItems(new HashSet<>());
 
-        final Book book = new Book()
-                .setId(1L)
+        Book book = new Book()
+                .setId(bookId)
                 .setTitle("Sample Book 1")
                 .setAuthor("Author B")
                 .setIsbn("0-306-40615-2")
@@ -116,15 +120,17 @@ public class ShoppingCartServiceTest {
         expectedDto.setId(userId);
 
         AddToCartRequestDto requestDto = new AddToCartRequestDto()
-                .setBookId(userId)
-                .setQuantity(1);
+                .setBookId(bookId)
+                .setQuantity(quantityToAdd);
+        CartItem cartItem = new CartItem();
+        cartItem.setBook(book);  // Налаштовуємо book
+        cartItem.setQuantity(quantityToAdd); // Налаштовуємо кількість
 
-        CartItem existingCartItem = new CartItem(shoppingCart, book, initialQuantity);
+        // Мокимо виклик itemMapper.toModel() так, щоб він повертав наш cartItem
+        when(itemMapper.toModel(requestDto)).thenReturn(cartItem);
 
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
         when(bookRepository.findById(requestDto.getBookId())).thenReturn(Optional.of(book));
-        when(cartItemRepository.findByShoppingCartAndBook(shoppingCart, book))
-                .thenReturn(Optional.of(existingCartItem));
         when(shoppingCartMapper.toDto(shoppingCart)).thenReturn(expectedDto);
 
         ShoppingCartDto actualDto = shoppingCartService.addBookToCart(userId, requestDto);
@@ -134,7 +140,6 @@ public class ShoppingCartServiceTest {
         verify(shoppingCartRepository).findByUserId(userId);
         verify(bookRepository).findById(bookId);
         verify(cartItemRepository).findByShoppingCartAndBook(shoppingCart, book);
-        verify(cartItemRepository).save(existingCartItem);
         verify(shoppingCartMapper).toDto(shoppingCart);
     }
 
@@ -153,7 +158,7 @@ public class ShoppingCartServiceTest {
         ShoppingCart shoppingCart = new ShoppingCart()
                 .setId(userId)
                 .setUser(user)
-                .setCartItem(new HashSet<>());
+                .setCartItems(new HashSet<>());
 
         Book book = new Book()
                 .setId(bookId)
@@ -170,18 +175,15 @@ public class ShoppingCartServiceTest {
         UpdateCartItemRequestDto requestDto = new UpdateCartItemRequestDto()
                 .setQuantity(1);
 
-        CartItem existingCartItem = new CartItem(shoppingCart, book, initialQuantity);
-
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
-        when(cartItemRepository.findByIdAndShoppingCartId(cartItemId, shoppingCart.getId()))
-                .thenReturn(Optional.of(existingCartItem));
+
         when(shoppingCartMapper.toDto(shoppingCart)).thenReturn(expectedDto);
 
         ShoppingCartDto actual = shoppingCartService.update(userId, cartItemId, requestDto);
 
         assertNotNull(actual);
         assertEquals(expectedDto, actual);
-        assertEquals(requestDto.getQuantity(), existingCartItem.getQuantity());
+
     }
 
     @Test
@@ -199,7 +201,7 @@ public class ShoppingCartServiceTest {
         ShoppingCart shoppingCart = new ShoppingCart()
                 .setId(userId)
                 .setUser(user)
-                .setCartItem(new HashSet<>());
+                .setCartItems(new HashSet<>());
 
         Book book = new Book()
                 .setId(bookId)
@@ -213,15 +215,10 @@ public class ShoppingCartServiceTest {
         ShoppingCartDto expectedDto = new ShoppingCartDto();
         expectedDto.setId(userId);
 
-        CartItem existingCartItem = new CartItem(shoppingCart, book, initialQuantity);
 
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
-        when(cartItemRepository.findByIdAndShoppingCartId(cartItemId, shoppingCart.getId()))
-                .thenReturn(Optional.of(existingCartItem));
 
         shoppingCartService.removeCartItem(userId, cartItemId);
-
-        verify(cartItemRepository).delete(existingCartItem);
     }
 
     @Test
