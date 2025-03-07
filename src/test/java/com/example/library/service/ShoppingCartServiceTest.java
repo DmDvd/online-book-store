@@ -6,11 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.library.dto.cartitem.AddToCartRequestDto;
 import com.example.library.dto.cartitem.UpdateCartItemRequestDto;
 import com.example.library.dto.shopppingcart.ShoppingCartDto;
+import com.example.library.exception.EntityNotFoundException;
 import com.example.library.mapper.CartItemMapper;
 import com.example.library.mapper.ShoppingCartMapper;
 import com.example.library.model.Book;
@@ -52,33 +54,6 @@ public class ShoppingCartServiceTest {
     private ShoppingCartServiceImpl shoppingCartService;
 
     @Test
-    @DisplayName("Get shopping cart for valid user Id returns ShoppingCartDto")
-    void getShoppingCart_ValidUserId_ReturnsShoppingCartDto() {
-        Long userId = 1L;
-        User user = new User()
-                .setId(userId)
-                .setEmail("test@example.com");
-
-        ShoppingCart shoppingCart = new ShoppingCart()
-                .setId(userId)
-                .setUser(user)
-                .setCartItems(new HashSet<>());
-
-        ShoppingCartDto expectedDto = new ShoppingCartDto();
-        expectedDto.setId(userId);
-
-        when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
-        when(shoppingCartMapper.toDto(shoppingCart)).thenReturn(expectedDto);
-
-        ShoppingCartDto actualDto = shoppingCartService.getShoppingCart(userId);
-
-        assertNotNull(actualDto);
-        assertEquals(expectedDto, actualDto);
-        verify(shoppingCartRepository).findByUserId(userId);
-        verify(shoppingCartMapper).toDto(shoppingCart);
-    }
-
-    @Test
     @DisplayName("Get shopping cart for invalid user Id throws EntityNotFoundException")
     void getShoppingCart_InvalidUserId_ThrowsEntityNotFoundException() {
         Long userId = 100L;
@@ -102,7 +77,7 @@ public class ShoppingCartServiceTest {
                 .setId(userId)
                 .setEmail("test@example.com");
 
-        ShoppingCart shoppingCart = new ShoppingCart()
+        final ShoppingCart shoppingCart = new ShoppingCart()
                 .setId(userId)
                 .setUser(user)
                 .setCartItems(new HashSet<>());
@@ -123,10 +98,9 @@ public class ShoppingCartServiceTest {
                 .setBookId(bookId)
                 .setQuantity(quantityToAdd);
         CartItem cartItem = new CartItem();
-        cartItem.setBook(book);  // Налаштовуємо book
-        cartItem.setQuantity(quantityToAdd); // Налаштовуємо кількість
+        cartItem.setBook(book);
+        cartItem.setQuantity(quantityToAdd);
 
-        // Мокимо виклик itemMapper.toModel() так, щоб він повертав наш cartItem
         when(itemMapper.toModel(requestDto)).thenReturn(cartItem);
 
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
@@ -139,7 +113,6 @@ public class ShoppingCartServiceTest {
         assertEquals(expectedDto, actualDto);
         verify(shoppingCartRepository).findByUserId(userId);
         verify(bookRepository).findById(bookId);
-        verify(cartItemRepository).findByShoppingCartAndBook(shoppingCart, book);
         verify(shoppingCartMapper).toDto(shoppingCart);
     }
 
@@ -169,31 +142,56 @@ public class ShoppingCartServiceTest {
                 .setDescription("Another sample book description.")
                 .setCoverImage("http://example.com/cover1.jpg");
 
+        CartItem cartItem = new CartItem()
+                .setId(cartItemId)
+                .setShoppingCart(shoppingCart)
+                .setBook(book)
+                .setQuantity(initialQuantity);
+
+        shoppingCart.getCartItems().add(cartItem);
+
+        final UpdateCartItemRequestDto requestDto = new UpdateCartItemRequestDto()
+                .setQuantity(1);
+
         ShoppingCartDto expectedDto = new ShoppingCartDto();
         expectedDto.setId(userId);
 
-        UpdateCartItemRequestDto requestDto = new UpdateCartItemRequestDto()
-                .setQuantity(1);
-
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
-
+        when(cartItemRepository.findByIdAndShoppingCartId(cartItemId, shoppingCart.getId()))
+                .thenReturn(Optional.of(cartItem));
         when(shoppingCartMapper.toDto(shoppingCart)).thenReturn(expectedDto);
 
         ShoppingCartDto actual = shoppingCartService.update(userId, cartItemId, requestDto);
 
         assertNotNull(actual);
         assertEquals(expectedDto, actual);
-
+        assertEquals(1, cartItem.getQuantity());
     }
 
     @Test
-    @DisplayName("Remove cart item for valid cart and item deletes item")
-    void removeCartItem_ValidCartAndItem_DeletesItem() {
+    @DisplayName("Should throw EntityNotFoundException when shopping cart is not found")
+    void updateCartItem_WhenShoppingCartNotFound_ShouldThrowException() {
         Long userId = 1L;
-        final Long cartItemId = 1L;
-        final Long bookId = 1L;
-        final int initialQuantity = 2;
+        Long cartItemId = 1L;
+        UpdateCartItemRequestDto requestDto = new UpdateCartItemRequestDto().setQuantity(2);
 
+        when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> shoppingCartService.update(userId, cartItemId, requestDto)
+        );
+
+        assertEquals("Can't find shopping cart for user with id: "
+                + userId, exception.getMessage());
+
+        verify(shoppingCartRepository).findByUserId(userId);
+        verifyNoInteractions(cartItemRepository);
+    }
+
+    @Test
+    @DisplayName("Get shopping cart for valid user Id returns ShoppingCartDto")
+    void getShoppingCart_ValidUserId_ReturnsShoppingCartDto() {
+        Long userId = 1L;
         User user = new User()
                 .setId(userId)
                 .setEmail("test@example.com");
@@ -203,22 +201,18 @@ public class ShoppingCartServiceTest {
                 .setUser(user)
                 .setCartItems(new HashSet<>());
 
-        Book book = new Book()
-                .setId(bookId)
-                .setTitle("Sample Book 1")
-                .setAuthor("Author B")
-                .setIsbn("0-306-40615-2")
-                .setPrice(BigDecimal.valueOf(149.99))
-                .setDescription("Another sample book description.")
-                .setCoverImage("http://example.com/cover1.jpg");
-
         ShoppingCartDto expectedDto = new ShoppingCartDto();
         expectedDto.setId(userId);
 
-
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.of(shoppingCart));
+        when(shoppingCartMapper.toDto(shoppingCart)).thenReturn(expectedDto);
 
-        shoppingCartService.removeCartItem(userId, cartItemId);
+        ShoppingCartDto actualDto = shoppingCartService.getShoppingCart(userId);
+
+        assertNotNull(actualDto);
+        assertEquals(expectedDto, actualDto);
+        verify(shoppingCartRepository).findByUserId(userId);
+        verify(shoppingCartMapper).toDto(shoppingCart);
     }
 
     @Test

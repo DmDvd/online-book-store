@@ -1,9 +1,8 @@
 package com.example.library.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.library.dto.cartitem.AddToCartRequestDto;
+import com.example.library.dto.cartitem.CartItemDto;
 import com.example.library.dto.cartitem.UpdateCartItemRequestDto;
 import com.example.library.dto.shopppingcart.ShoppingCartDto;
 import com.example.library.model.User;
@@ -79,9 +79,10 @@ public class ShoppingCartControllerTest {
         ShoppingCartDto actual = objectMapper.readValue(content, ShoppingCartDto.class);
 
         System.out.println(result.getResponse().getContentAsString());
-        assertNotNull("Must not be equal to null",actual);
-        assertNotNull("Must not be equal to null",actual.getId());
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
         assertEquals(1L, actual.getUserId());
+        assertNotNull(actual.getCartItems());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -98,16 +99,18 @@ public class ShoppingCartControllerTest {
         MvcResult result = mockMvc.perform(post("/cart")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
-                        .andExpect(status().isCreated())
-                        .andReturn();
+                .andExpect(status().isCreated())
+                .andReturn();
         ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
         System.out.println(result.getResponse().getContentAsString());
-        assertNotNull("ShoppingCartDto must not be null",actual);
-        assertNotNull("ShoppingCartDto must not be null",actual.getId());
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
         assertEquals(1L, actual.getUserId());
-        assertNotNull("Cart items must not be null", actual.getCartItems());
-
+        assertNotNull(actual.getCartItems());
+        CartItemDto cartItem = actual.getCartItems().iterator().next();
+        assertEquals(2L, cartItem.getBookId());
+        assertEquals(2, cartItem.getQuantity());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -145,7 +148,13 @@ public class ShoppingCartControllerTest {
         ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
 
-        assertNotNull("ShoppingCartDto must not be null", actual);
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(1L, actual.getUserId());
+        assertNotNull(actual.getCartItems());
+        CartItemDto cartItem = actual.getCartItems().iterator().next();
+        assertEquals(2L, cartItem.getBookId());
+        assertEquals(3, cartItem.getQuantity());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -172,7 +181,7 @@ public class ShoppingCartControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @DisplayName("Delete shopping cart by cart item ID should return no content")
     @Test
-    void deleteShoppingCart_DeleteShoppingCartByCartItemId_ShouldReturnNoContent()
+    void removeCartItem_DeleteShoppingCartByCartItemId_ShouldReturnNoContent()
             throws Exception {
         mockMvc.perform(delete("/cart/items/{cartItemId}", 1L))
                 .andExpect(status().isNoContent());
