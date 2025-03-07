@@ -83,6 +83,10 @@ public class ShoppingCartControllerTest {
         assertNotNull(actual.getId());
         assertEquals(1L, actual.getUserId());
         assertNotNull(actual.getCartItems());
+        CartItemDto cartItem = actual.getCartItems().iterator().next();
+        assertEquals(2L, cartItem.getBookId());
+        assertEquals(1, cartItem.getQuantity());
+        assertEquals("Book Title", cartItem.getBookTitle());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -103,7 +107,6 @@ public class ShoppingCartControllerTest {
                 .andReturn();
         ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
-        System.out.println(result.getResponse().getContentAsString());
         assertNotNull(actual);
         assertNotNull(actual.getId());
         assertEquals(1L, actual.getUserId());
@@ -111,6 +114,7 @@ public class ShoppingCartControllerTest {
         CartItemDto cartItem = actual.getCartItems().iterator().next();
         assertEquals(2L, cartItem.getBookId());
         assertEquals(2, cartItem.getQuantity());
+        assertEquals("Book Title", cartItem.getBookTitle());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -155,6 +159,7 @@ public class ShoppingCartControllerTest {
         CartItemDto cartItem = actual.getCartItems().iterator().next();
         assertEquals(2L, cartItem.getBookId());
         assertEquals(3, cartItem.getQuantity());
+        assertEquals("Book Title", cartItem.getBookTitle());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",

@@ -59,7 +59,7 @@ public class ShoppingCartServiceTest {
         Long userId = 100L;
         when(shoppingCartRepository.findByUserId(userId)).thenReturn(Optional.empty());
         Exception exception = assertThrows(
-                RuntimeException.class, () -> shoppingCartService.getShoppingCart(userId)
+                EntityNotFoundException.class, () -> shoppingCartService.getShoppingCart(userId)
         );
         String expected = "Can't find shopping cart by id: " + userId;
         String actual = exception.getMessage();
