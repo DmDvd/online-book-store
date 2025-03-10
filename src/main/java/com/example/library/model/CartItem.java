@@ -10,12 +10,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+@Accessors(chain = true)
 @Setter
 @Getter
+@NoArgsConstructor
 @SQLDelete(sql = "UPDATE cart_items SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 @Entity
@@ -35,10 +39,4 @@ public class CartItem {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    public CartItem(ShoppingCart shoppingCart, Book book, int quantity) {
-        this.shoppingCart = shoppingCart;
-        this.book = book;
-        this.quantity = quantity;
-        this.isDeleted = false;
-    }
 }
