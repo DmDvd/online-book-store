@@ -16,6 +16,7 @@ import com.example.library.dto.shopppingcart.ShoppingCartDto;
 import com.example.library.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -76,17 +77,25 @@ public class ShoppingCartControllerTest {
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
-        ShoppingCartDto actual = objectMapper.readValue(content, ShoppingCartDto.class);
 
-        System.out.println(result.getResponse().getContentAsString());
+        final ShoppingCartDto actual = objectMapper.readValue(content, ShoppingCartDto.class);
+
+        ShoppingCartDto expected = new ShoppingCartDto();
+        expected.setId(1L);
+        expected.setUserId(1L);
+
+        CartItemDto expectedCartItem = new CartItemDto();
+        expectedCartItem.setId(1L);
+        expectedCartItem.setBookId(2L);
+        expectedCartItem.setBookTitle("Book Title");
+        expectedCartItem.setQuantity(1);
+
+        expected.setCartItems(Set.of(expectedCartItem));
+
         assertNotNull(actual);
         assertNotNull(actual.getId());
-        assertEquals(1L, actual.getUserId());
         assertNotNull(actual.getCartItems());
-        CartItemDto cartItem = actual.getCartItems().iterator().next();
-        assertEquals(2L, cartItem.getBookId());
-        assertEquals(1, cartItem.getQuantity());
-        assertEquals("Book Title", cartItem.getBookTitle());
+        assertEquals(expected, actual);
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -105,16 +114,27 @@ public class ShoppingCartControllerTest {
                         .content(jsonRequest))
                 .andExpect(status().isCreated())
                 .andReturn();
-        ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
+
+        final ShoppingCartDto actual = objectMapper
+                .readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
+
+        ShoppingCartDto expected = new ShoppingCartDto();
+        expected.setId(1L);
+        expected.setUserId(1L);
+
+        CartItemDto expectedCartItem = new CartItemDto();
+        expectedCartItem.setId(1L);
+        expectedCartItem.setBookId(2L);
+        expectedCartItem.setBookTitle("Book Title");
+        expectedCartItem.setQuantity(2);
+
+        expected.setCartItems(Set.of(expectedCartItem));
+
+        assertEquals(expected, actual);
         assertNotNull(actual);
         assertNotNull(actual.getId());
-        assertEquals(1L, actual.getUserId());
         assertNotNull(actual.getCartItems());
-        CartItemDto cartItem = actual.getCartItems().iterator().next();
-        assertEquals(2L, cartItem.getBookId());
-        assertEquals(2, cartItem.getQuantity());
-        assertEquals("Book Title", cartItem.getBookTitle());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
@@ -149,17 +169,26 @@ public class ShoppingCartControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        ShoppingCartDto actual = objectMapper.readValue(result.getResponse().getContentAsString(),
+        final ShoppingCartDto actual = objectMapper
+                .readValue(result.getResponse().getContentAsString(),
                 ShoppingCartDto.class);
 
+        ShoppingCartDto expected = new ShoppingCartDto();
+        expected.setId(1L);
+        expected.setUserId(1L);
+
+        CartItemDto expectedCartItem = new CartItemDto();
+        expectedCartItem.setId(1L);
+        expectedCartItem.setBookId(2L);
+        expectedCartItem.setBookTitle("Book Title");
+        expectedCartItem.setQuantity(3);
+
+        expected.setCartItems(Set.of(expectedCartItem));
+
+        assertEquals(expected, actual);
         assertNotNull(actual);
         assertNotNull(actual.getId());
-        assertEquals(1L, actual.getUserId());
         assertNotNull(actual.getCartItems());
-        CartItemDto cartItem = actual.getCartItems().iterator().next();
-        assertEquals(2L, cartItem.getBookId());
-        assertEquals(3, cartItem.getQuantity());
-        assertEquals("Book Title", cartItem.getBookTitle());
     }
 
     @Sql(scripts = "classpath:database/books/shopping-cart/add-shopping-cart.sql",
