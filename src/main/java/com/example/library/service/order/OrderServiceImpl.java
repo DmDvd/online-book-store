@@ -51,7 +51,6 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderItem(orderItems);
         order.setTotal(calculateTotal(orderItems));
-
         orderRepository.save(order);
 
         shoppingCart.getCartItems().clear();
