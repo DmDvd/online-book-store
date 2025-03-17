@@ -80,6 +80,27 @@
 + __User Role Permission:__
   + ```ROLE_USER```: Can browse books, manage their shopping cart, and place orders.
   + ```ROLE_ADMIN```: Can manage books, categories, and orders.
+
+**Table of roles and accessibility**
+
+| Action         | ROLE_USER | ROLE_ADMIN |
+|----------------|-----------|------------|
+| View Book      | Yes       | Yes        |
+| Add Book       | No        | Yes        |
+| Update Book    | No        | Yes        |
+| Delete Book    | No        | Yes        |
+| View Cart      | Yes       | No         |
+| Place an Order | Yes       | No         |
+| Manage Orders  | No        | Yes        |
+
+### Relationships between tables (Books, Categories, Users, Orders, Cart, OrderItems)
+**Relationships between tables:**
+- **Users** → has **Cart** and **Orders**.
+- **Orders** → consists of **OrderItems**.
+- **Books** → belongs to **Categories**.
+- **Cart** → contains **CartItems** that refer to **Books**.
+
+<img src="Relationships between.png" alt="Relationships between tables" width="350">
   
 ## Error Handling 
 
@@ -99,5 +120,6 @@
 + Handling concurrent updates in shopping cart items.
 + Optimizing search queries for books.
 
+## E-Book Market Architecture diagram
 
-
+<img src="Architecture.png" alt="Project architecture diagram" width="500">
