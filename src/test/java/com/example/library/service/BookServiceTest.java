@@ -16,8 +16,10 @@ import com.example.library.dto.book.CreateBookRequestDto;
 import com.example.library.exception.EntityNotFoundException;
 import com.example.library.mapper.BookMapper;
 import com.example.library.model.Book;
+import com.example.library.model.Category;
 import com.example.library.repository.book.BookRepository;
 import com.example.library.repository.book.BookSpecificationBuilder;
+import com.example.library.repository.category.CategoryRepository;
 import com.example.library.service.book.BookServiceImpl;
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,6 +46,9 @@ public class BookServiceTest {
 
     @Mock
     private BookSpecificationBuilder bookSpecificationBuilder;
+
+    @Mock
+    private CategoryRepository categoryRepository;
 
     @InjectMocks
     private BookServiceImpl bookService;
@@ -117,6 +122,14 @@ public class BookServiceTest {
                 .setDescription(book.getDescription())
                 .setCoverImage(book.getCoverImage());
 
+        Category category = new Category()
+                .setId(1L)
+                .setName("Fiction")
+                .setDescription("Fiction books");
+
+        when(categoryRepository.findAllById(requestDto.getCategoriesId()))
+                .thenReturn(List.of(category));
+
         when(bookMapper.toModel(requestDto)).thenReturn(book);
         when(bookRepository.save(book)).thenReturn(book);
         when(bookMapper.toDto(book)).thenReturn(bookDto);
@@ -127,7 +140,7 @@ public class BookServiceTest {
         verify(bookMapper).toModel(requestDto);
         verify(bookRepository).save(book);
         verify(bookMapper).toDto(book);
-        verifyNoMoreInteractions(bookRepository, bookMapper);
+        verifyNoMoreInteractions(bookRepository, bookMapper, categoryRepository);
     }
 
     @Test

@@ -38,5 +38,4 @@ public class CartItem {
     private int quantity;
     @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean isDeleted = false;
-
 }

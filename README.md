@@ -123,3 +123,7 @@
 ## E-Book Market Architecture diagram
 
 <img src="Architecture.png" alt="Project architecture diagram" width="500">
+
+### Link to a short video overview of the project
+
+https://www.loom.com/share/07b7d43417654d838d5d5959a332eb8f?sid=8971e482-2576-4ca2-a7f0-c33017dfe3fe
