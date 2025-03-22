@@ -53,6 +53,8 @@ public class BookControllerTest {
                 .build();
     }
 
+    @Sql(scripts = "classpath:database/books/category-book.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/books/delete-all-books.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(username = "admin", roles = {"ADMIN"})

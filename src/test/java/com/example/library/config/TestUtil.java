@@ -5,7 +5,9 @@ import com.example.library.dto.book.CreateBookRequestDto;
 import com.example.library.dto.category.CategoryDto;
 import com.example.library.dto.category.CreateCategoryRequestDto;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TestUtil {
     public static CreateBookRequestDto createBookRequestDto() {
@@ -21,6 +23,9 @@ public class TestUtil {
 
     public static BookDto createBookDto(Long id) {
         CreateBookRequestDto requestDto = createBookRequestDto();
+        Set<CategoryDto> categoryDtos = new HashSet<>();
+        categoryDtos.add(new CategoryDto().setId(1L).setName("Fiction"));
+        categoryDtos.add(new CategoryDto().setId(2L).setName("Science"));
         return new BookDto()
                 .setId(id)
                 .setTitle(requestDto.getTitle())
@@ -29,7 +34,7 @@ public class TestUtil {
                 .setPrice(requestDto.getPrice())
                 .setDescription(requestDto.getDescription())
                 .setCoverImage(requestDto.getCoverImage())
-                .setCategoryIds(requestDto.getCategoriesId());
+                .setCategories(categoryDtos);
     }
 
     public static CreateCategoryRequestDto createCategoryRequestDto() {

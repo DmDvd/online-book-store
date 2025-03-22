@@ -25,15 +25,16 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Table(name = "shopping_carts")
 public class ShoppingCart {
+
     @Id
     private Long id;
-    @OneToOne
     @MapsId
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
     @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItem> cartItems = new HashSet<>();
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean isDeleted = false;
 
     public void addItemToCart(CartItem cartItem) {

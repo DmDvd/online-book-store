@@ -49,9 +49,8 @@ public class OrderServiceImpl implements OrderService {
 
         Set<OrderItem> orderItems = createOrderItems(order, shoppingCart);
 
-        order.setOrderItem(orderItems);
+        order.setOrderItems(orderItems);
         order.setTotal(calculateTotal(orderItems));
-
         orderRepository.save(order);
 
         shoppingCart.getCartItems().clear();
@@ -87,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
                 () -> new EntityNotFoundException("Can't find order by id: "
                         + orderId + " for user id: " + userId)
         );
-        return order.getOrderItem()
+        return order.getOrderItems()
                 .stream()
                 .map(orderItemMapper::toDto)
                 .toList();

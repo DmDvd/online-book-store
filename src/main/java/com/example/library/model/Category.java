@@ -29,6 +29,6 @@ public class Category {
 
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean isDeleted = false;
 }

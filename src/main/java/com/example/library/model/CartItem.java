@@ -36,7 +36,6 @@ public class CartItem {
     private Book book;
     @Column(nullable = false)
     private int quantity;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean isDeleted = false;
-
 }
