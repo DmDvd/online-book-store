@@ -37,7 +37,7 @@ public class BookServiceImpl implements BookService {
                 .findAllById(requestDto.getCategoriesId()));
         book.setCategories(categories);
 
-        book = bookRepository.save(book);
+        bookRepository.save(book);
         return bookMapper.toDto(book);
     }
 

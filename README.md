@@ -124,6 +124,75 @@
 
 <img src="Architecture.png" alt="Project architecture diagram" width="500">
 
+## Versions
+
+- __Java: 21__
+- __Spring Boot: 3.4.0__
+- __Spring Context: 6.2.1__
+- __MySQL Connector: 9.1.0__
+- __JUnit: 4.13.2__
+- __MapStruct: 1.6.3__
+- __JWT: 0.12.6__
+- __Testcontainers: 1.20.4__
+- __Maven Compiler Plugin: 3.11.0__
+- __Maven Checkstyle Plugin: 3.3.0__
+- __Docker: 27.5.1__
+
+## How to Run the Application
+
+### Prerequisites
+
+- __Java 21__
+- __Maven 3.8 +__
+- __Docker (for running MySQL using Docker Compose)__ 
+- __MySQL (if running without Docker__
+
+### Step 1: Clone the Repository
+
+```html
+git clone https://github.com/your-repo/online-book-store.git
+cd online-book-store
+```
+
+### Step 2: Configure Database
+If using Docker, you can run MySQL using the provided ```docker-compose.yml``` file:
+
+```docker-compose up -d```
+
+Make sure the database container is up and running.
+
+Also, if you are using a local MySQL instance, make sure it matches the configuration specified in the file: ```application.properites```
+
+- Create a database named books using your MySQL client:
+
+```sql
+CREATE DATABASE books;
+```
+
+### Step 3: Build the Project
+
+Use Maven to build the application:
+```
+mvn clean install
+```
+### Step 4: Run the Application
+
+Start the application using the following command:
+
+```
+mvn spring-boot:run
+```
+
+The application will be accessible at:
+
+- __API:__ ```http://localhost:8080```
+- __Swagger UI:__ ```http://localhost:8080/swagger-ui.html```
+
+### Step 3: Test the Application
+
+You can use tools like Postman to test the API endpoints.
+Additionally, Swagger UI provides an interactive way to test all endpoints.
+
 ### Link to a short video overview of the project
 
 https://www.loom.com/share/07b7d43417654d838d5d5959a332eb8f?sid=8971e482-2576-4ca2-a7f0-c33017dfe3fe
